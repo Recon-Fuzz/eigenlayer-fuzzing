@@ -20,6 +20,8 @@ import "src/contracts/strategies/StrategyBase.sol";
 import "src/test/mocks/EmptyContract.sol";
 import "src/contracts/strategies/StrategyBaseTVLLimits.sol";
 
+import "forge-std/console2.sol";
+
 // this contract deploys the EigenLayer system for use by an integrating system
 // to use, the deployEigenLayer function is called by the setup function in the integrating system's fuzz suite
 // which either inherits this contract to have access to the deployed contracts and their state variables
@@ -55,6 +57,8 @@ contract EigenLayerSetup {
     UpgradeableBeacon public eigenPodBeacon;
     EigenPod public eigenPodImplementation;
     StrategyBase public baseStrategyImplementation;
+    IStrategy[] public strategies;
+    uint256[] public withdrawalDelayBlocks;
 
     EmptyContract public emptyContract;
 
@@ -62,11 +66,12 @@ contract EigenLayerSetup {
     ETHPOSDepositMock public ethPOSDepositMock; // mock for now, actual implementation requires forking
     address public beaconChainOracle;
 
-    address admin = address(0x01);
-    uint256 MAX_RESTAKED_BALANCE_GWEI_PER_VALIDATOR = 32000000000; // taken from mainnet deployment
-    uint64 GOERLI_GENESIS_TIME = 1606824023; // taken from mainnet deployment
+    address admin = address(this);
+    uint256 MAX_RESTAKED_BALANCE_GWEI_PER_VALIDATOR = 32 gwei; // taken from mainnet deployment
+    uint64 GENESIS_TIME = 1616508000; // taken from mainnet deployment
     // NOTE: setting these to false so that contracts can immediately be interacted with
     uint256 DELEGATION_INIT_PAUSED_STATUS = 0;
+    uint256 DELEGATION_INIT_WITHDRAWAL_DELAY_BLOCKS = 0;
     uint256 STRATEGY_MANAGER_INIT_PAUSED_STATUS = 0;
     uint256 SLASHER_INIT_PAUSED_STATUS = 0;
     uint256 EIGENPOD_MANAGER_INIT_PAUSED_STATUS = 0;
@@ -121,8 +126,9 @@ contract EigenLayerSetup {
             delayedWithdrawalRouter,
             eigenPodManager,
             uint64(MAX_RESTAKED_BALANCE_GWEI_PER_VALIDATOR),
-            GOERLI_GENESIS_TIME
+            GENESIS_TIME
         );
+
         // this is used in EigenPodManager to set the implementation that supplies source bytecode every time a new pod is deployed
         eigenPodBeacon = new UpgradeableBeacon(address(eigenPodImplementation));
 
@@ -137,6 +143,7 @@ contract EigenLayerSetup {
             slasher,
             delegation
         );
+
         delayedWithdrawalRouterImplementation = new DelayedWithdrawalRouter(eigenPodManager);
 
         // Third, upgrade the proxy contracts to use the correct implementation contracts and initialize them.
@@ -147,7 +154,12 @@ contract EigenLayerSetup {
                 DelegationManager.initialize.selector,
                 admin,
                 eigenLayerPauserReg,
-                DELEGATION_INIT_PAUSED_STATUS
+                DELEGATION_INIT_PAUSED_STATUS,
+                DELEGATION_INIT_WITHDRAWAL_DELAY_BLOCKS,
+                // NOTE: passing in empty arrays for these two for now while figuring out how to deploy strategies
+                // TODO: change these once strategy deployments are handled
+                strategies,
+                withdrawalDelayBlocks
             )
         );
         eigenLayerProxyAdmin.upgradeAndCall(
@@ -192,7 +204,7 @@ contract EigenLayerSetup {
         );
 
         // deploy StrategyBaseTVLLimits contract implementation
-        baseStrategyImplementation = new StrategyBaseTVLLimits(strategyManager);
+        // baseStrategyImplementation = new StrategyBaseTVLLimits(strategyManager);
 
         // @audit logic for deploying strategies, handle this after all of the above have been tested
         // can use existing strategies deployed on mainnet
