@@ -60,6 +60,9 @@ contract EigenLayerSetup {
     IStrategy[] public strategies;
     uint256[] public withdrawalDelayBlocks;
 
+    // strategies deployed
+    StrategyBaseTVLLimits[] public deployedStrategyArray;
+
     EmptyContract public emptyContract;
 
     // BeaconChain deposit contract & beacon chain oracle
@@ -81,9 +84,14 @@ contract EigenLayerSetup {
     // this function will ultimately have local or fork option
     // NOTE: this copies the logic of the M1_Deploy script to deploy the entire system
     // eventually add the contracts in the M2 implementation
-    function deployEigenLayer() public {
+    function deployEigenLayer(
+        address lstTokenAddress1,
+        address lstTokenAddress2,
+        string memory lstTokenSymbol1,
+        string memory lstTokenSymbol2
+    ) public {
         // tokens to deploy strategies for
-        StrategyConfig[] memory strategyConfigs; // these need to have some sort of mock implementation included
+        StrategyConfig[2] memory strategyConfigs; // these need to have some sort of mock implementation included
 
         // deploy proxy admin for ability to upgrade proxy contracts
         vm.prank(admin);
@@ -203,30 +211,38 @@ contract EigenLayerSetup {
             )
         );
 
-        // deploy StrategyBaseTVLLimits contract implementation
-        // baseStrategyImplementation = new StrategyBaseTVLLimits(strategyManager);
-
-        // @audit logic for deploying strategies, handle this after all of the above have been tested
-        // can use existing strategies deployed on mainnet
-        // create upgradeable proxies that each point to the implementation and initialize them
-        // for (uint256 i = 0; i < strategyConfigs.length; ++i) {
-        //     deployedStrategyArray.push(
-        //         StrategyBaseTVLLimits(
-        //             address(
-        //                 new TransparentUpgradeableProxy(
-        //                     address(baseStrategyImplementation),
-        //                     address(eigenLayerProxyAdmin),
-        //                     abi.encodeWithSelector(
-        //                         StrategyBaseTVLLimits.initialize.selector,
-        //                         strategyConfigs[i].maxPerDeposit,
-        //                         strategyConfigs[i].maxDeposits,
-        //                         IERC20(strategyConfigs[i].tokenAddress),
-        //                         eigenLayerPauserReg
-        //                     )
-        //                 )
-        //             )
-        //         )
-        //     );
+        // {
+        //     uint256 maxDeposits,
+        //     uint256 maxPerDeposit,
+        //     address tokenAddress,
+        //     string tokenSymbol
         // }
+
+        // TODO: add strategies here
+        strategyConfigs[0] = StrategyConfig(type(uint256).max, type(uint256).max, lstTokenAddress1, lstTokenSymbol1);
+        strategyConfigs[1] = StrategyConfig(type(uint256).max, type(uint256).max, lstTokenAddress2, lstTokenSymbol2);
+        // deploy StrategyBaseTVLLimits contract implementation
+        baseStrategyImplementation = new StrategyBaseTVLLimits(strategyManager);
+
+        // creates upgradeable proxies of strategies that each point to the implementation and initialize them
+        for (uint256 i = 0; i < strategyConfigs.length; ++i) {
+            deployedStrategyArray.push(
+                StrategyBaseTVLLimits(
+                    address(
+                        new TransparentUpgradeableProxy(
+                            address(baseStrategyImplementation),
+                            address(eigenLayerProxyAdmin),
+                            abi.encodeWithSelector(
+                                StrategyBaseTVLLimits.initialize.selector,
+                                strategyConfigs[i].maxPerDeposit,
+                                strategyConfigs[i].maxDeposits,
+                                IERC20(strategyConfigs[i].tokenAddress),
+                                eigenLayerPauserReg
+                            )
+                        )
+                    )
+                )
+            );
+        }
     }
 }
