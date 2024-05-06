@@ -26,14 +26,6 @@ import "forge-std/console2.sol";
 // to use, the deployEigenLayer function is called by the setup function in the integrating system's fuzz suite
 // which either inherits this contract to have access to the deployed contracts and their state variables
 contract EigenLayerSetup {
-    // EigenLayer system components:
-    // 1. EigenPodManager (EigenPodManager, EigenPod, DelayedWithdrawalRouter, EigenLayerBeaconOracle)
-    // 2. StrategyManager (StrategyManager, StrategyBaseTVLLimits)
-    // 3. DelegationManager
-    // 4. AVSDirectory
-    // 5. Slasher (under development)
-
-    // struct used to encode token info in config file
     struct StrategyConfig {
         uint256 maxDeposits;
         uint256 maxPerDeposit;
@@ -66,12 +58,15 @@ contract EigenLayerSetup {
     EmptyContract public emptyContract;
 
     // BeaconChain deposit contract & beacon chain oracle
-    ETHPOSDepositMock public ethPOSDepositMock; // mock for now, actual implementation requires forking
+    ETHPOSDepositMock public ethPOSDepositMock;
     address public beaconChainOracle;
 
     address admin = address(this);
-    uint256 MAX_RESTAKED_BALANCE_GWEI_PER_VALIDATOR = 32 gwei; // taken from mainnet deployment
-    uint64 GENESIS_TIME = 1616508000; // taken from mainnet deployment
+
+    // NOTE: All constant values are taken from mainnet deployments
+    uint256 MAX_RESTAKED_BALANCE_GWEI_PER_VALIDATOR = 32 gwei;
+    uint64 GENESIS_TIME = 1616508000;
+
     // NOTE: setting these to false so that contracts can immediately be interacted with
     uint256 DELEGATION_INIT_PAUSED_STATUS = 0;
     uint256 DELEGATION_INIT_WITHDRAWAL_DELAY_BLOCKS = 0;
@@ -79,19 +74,17 @@ contract EigenLayerSetup {
     uint256 SLASHER_INIT_PAUSED_STATUS = 0;
     uint256 EIGENPOD_MANAGER_INIT_PAUSED_STATUS = 0;
     uint256 DELAYED_WITHDRAWAL_ROUTER_INIT_PAUSED_STATUS = 0;
-    uint256 DELAYED_WITHDRAWAL_ROUTER_INIT_WITHDRAWAL_DELAY_BLOCKS = 0; // taken from mainnet deployment
+    uint256 DELAYED_WITHDRAWAL_ROUTER_INIT_WITHDRAWAL_DELAY_BLOCKS = 0;
 
-    // this function will ultimately have local or fork option
-    // NOTE: this copies the logic of the M1_Deploy script to deploy the entire system
-    // eventually add the contracts in the M2 implementation
-    function deployEigenLayer(
-        address lstTokenAddress1,
-        address lstTokenAddress2,
-        string memory lstTokenSymbol1,
-        string memory lstTokenSymbol2
-    ) public {
+    /**
+        @notice Deploys the entire EigenLayer system locally 
+        @dev Strategies are deployed for the tokenAddresses and tokenSymbols passed in
+        @param tokenAddresses The LST addresses to deploy strategies for
+        NOTE: This copies the logic of the M1_Deploy script to deploy the entire system
+    */
+    function deployEigenLayer(address[] memory tokenAddresses) public {
         // tokens to deploy strategies for
-        StrategyConfig[2] memory strategyConfigs; // these need to have some sort of mock implementation included
+        StrategyConfig[] memory strategyConfigs = new StrategyConfig[](tokenAddresses.length);
 
         // deploy proxy admin for ability to upgrade proxy contracts
         vm.prank(admin);
@@ -211,21 +204,9 @@ contract EigenLayerSetup {
             )
         );
 
-        // {
-        //     uint256 maxDeposits,
-        //     uint256 maxPerDeposit,
-        //     address tokenAddress,
-        //     string tokenSymbol
-        // }
-
-        // TODO: add strategies here
-        strategyConfigs[0] = StrategyConfig(type(uint256).max, type(uint256).max, lstTokenAddress1, lstTokenSymbol1);
-        strategyConfigs[1] = StrategyConfig(type(uint256).max, type(uint256).max, lstTokenAddress2, lstTokenSymbol2);
-        // deploy StrategyBaseTVLLimits contract implementation
         baseStrategyImplementation = new StrategyBaseTVLLimits(strategyManager);
-
         // creates upgradeable proxies of strategies that each point to the implementation and initialize them
-        for (uint256 i = 0; i < strategyConfigs.length; ++i) {
+        for (uint256 i = 0; i < tokenAddresses.length; ++i) {
             deployedStrategyArray.push(
                 StrategyBaseTVLLimits(
                     address(
@@ -234,9 +215,9 @@ contract EigenLayerSetup {
                             address(eigenLayerProxyAdmin),
                             abi.encodeWithSelector(
                                 StrategyBaseTVLLimits.initialize.selector,
-                                strategyConfigs[i].maxPerDeposit,
-                                strategyConfigs[i].maxDeposits,
-                                IERC20(strategyConfigs[i].tokenAddress),
+                                type(uint256).max,
+                                type(uint256).max,
+                                IERC20(tokenAddresses[i]),
                                 eigenLayerPauserReg
                             )
                         )
