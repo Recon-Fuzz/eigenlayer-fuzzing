@@ -3,22 +3,24 @@ pragma solidity ^0.8.12;
 
 import "@openzeppelin/contracts/proxy/transparent/ProxyAdmin.sol";
 import "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {vm} from "@chimera/Hevm.sol";
 
-import "src/test/mocks/ETHDepositMock.sol";
-import "src/contracts/core/Slasher.sol";
-import "src/contracts/core/DelegationManager.sol";
-import "src/contracts/core/StrategyManager.sol";
-import "src/contracts/pods/EigenPod.sol";
-import "src/contracts/pods/EigenPodManager.sol";
-import "src/contracts/pods/DelayedWithdrawalRouter.sol";
-import "src/test/mocks/ETHDepositMock.sol";
-import "src/test/mocks/BeaconChainOracleMock.sol";
-import "src/contracts/permissions/PauserRegistry.sol";
-import "src/contracts/core/StrategyManager.sol";
-import "src/contracts/strategies/StrategyBase.sol";
-import "src/test/mocks/EmptyContract.sol";
-import "src/contracts/strategies/StrategyBaseTVLLimits.sol";
+import {ETHPOSDepositMock} from "../mocks/ETHDepositMock.sol";
+import {Slasher} from "../../../src/contracts/core/Slasher.sol";
+import {DelegationManager} from "../../../src/contracts/core/DelegationManager.sol";
+import {StrategyManager} from "../../../src/contracts/core/StrategyManager.sol";
+import {EigenPod} from "../../../src/contracts/pods/EigenPod.sol";
+import {EigenPodManager} from "../../../src/contracts/pods/EigenPodManager.sol";
+import {DelayedWithdrawalRouter} from "../../../src/contracts/pods/DelayedWithdrawalRouter.sol";
+import {BeaconChainOracleMock} from "../../../src/test/mocks/BeaconChainOracleMock.sol";
+import {PauserRegistry} from "../../../src/contracts/permissions/PauserRegistry.sol";
+import {StrategyManager} from "../../../src/contracts/core/StrategyManager.sol";
+import {StrategyBase} from "../../../src/contracts/strategies/StrategyBase.sol";
+import {EmptyContract} from "../../../src/test/mocks/EmptyContract.sol";
+import {StrategyBaseTVLLimits} from "../../../src/contracts/strategies/StrategyBaseTVLLimits.sol";
+import {IStrategy} from "../../../src/contracts/interfaces/IStrategy.sol";
+import {IBeaconChainOracle} from "../../../src/contracts/interfaces/IBeaconChainOracle.sol";
 
 import "forge-std/console2.sol";
 

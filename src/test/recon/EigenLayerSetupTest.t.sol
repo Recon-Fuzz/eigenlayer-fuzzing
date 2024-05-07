@@ -2,7 +2,7 @@
 pragma solidity ^0.8.12;
 
 import {EigenLayerSetup} from "src/test/recon/EigenLayerSetup.sol";
-import "src/test/recon/MockERC20.sol";
+import {MockERC20} from "../mocks/MockERC20.sol";
 import "forge-std/Test.sol";
 
 contract EigenLayerSetupTest is EigenLayerSetup, Test {
