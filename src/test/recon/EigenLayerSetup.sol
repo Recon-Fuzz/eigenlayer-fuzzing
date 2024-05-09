@@ -36,49 +36,49 @@ contract EigenLayerSetup {
     }
 
     // EigenLayer Contracts
-    ProxyAdmin public eigenLayerProxyAdmin;
-    PauserRegistry public eigenLayerPauserReg;
-    Slasher public slasher;
-    Slasher public slasherImplementation;
-    DelegationManager public delegation;
-    DelegationManager public delegationImplementation;
-    StrategyManager public strategyManager;
-    StrategyManager public strategyManagerImplementation;
-    EigenPodManager public eigenPodManager;
-    EigenPodManager public eigenPodManagerImplementation;
-    DelayedWithdrawalRouter public delayedWithdrawalRouter;
-    DelayedWithdrawalRouter public delayedWithdrawalRouterImplementation;
-    UpgradeableBeacon public eigenPodBeacon;
-    EigenPod public eigenPodImplementation;
-    StrategyBase public baseStrategyImplementation;
-    IStrategy[] public strategies;
-    uint256[] public withdrawalDelayBlocks;
-    address[] public tokenAddresses;
+    ProxyAdmin internal eigenLayerProxyAdmin;
+    PauserRegistry internal eigenLayerPauserReg;
+    Slasher internal slasher;
+    Slasher internal slasherImplementation;
+    DelegationManager internal delegation;
+    DelegationManager internal delegationImplementation;
+    StrategyManager internal strategyManager;
+    StrategyManager internal strategyManagerImplementation;
+    EigenPodManager internal eigenPodManager;
+    EigenPodManager internal eigenPodManagerImplementation;
+    DelayedWithdrawalRouter internal delayedWithdrawalRouter;
+    DelayedWithdrawalRouter internal delayedWithdrawalRouterImplementation;
+    UpgradeableBeacon internal eigenPodBeacon;
+    EigenPod internal eigenPodImplementation;
+    StrategyBase internal baseStrategyImplementation;
+    IStrategy[] internal strategies;
+    uint256[] internal withdrawalDelayBlocks;
+    address[] internal tokenAddresses;
 
     // addresses for fork testing
-    address public eigenLayerPauserRegAddress;
-    address public delegationAddress;
-    address public strategyManagerAddress;
-    address public slasherAddress;
-    address public eigenPodManagerAddress;
-    address public delayedWithdrawalRouterAddress;
-    address public operationsMultisig;
-    address public executorMultisig;
-    address public beaconChainOracleAddress;
-    address public eigenPodBeaconAddress;
-    address public cbETHStrategyAddress;
-    address public stETHStrategyAddress;
+    address internal eigenLayerPauserRegAddress;
+    address internal delegationAddress;
+    address internal strategyManagerAddress;
+    address internal slasherAddress;
+    address internal eigenPodManagerAddress;
+    address internal delayedWithdrawalRouterAddress;
+    address internal operationsMultisig;
+    address internal executorMultisig;
+    address internal beaconChainOracleAddress;
+    address internal eigenPodBeaconAddress;
+    address internal cbETHStrategyAddress;
+    address internal stETHStrategyAddress;
 
     // strategies deployed
-    StrategyBaseTVLLimits[] public deployedStrategyArray;
+    StrategyBaseTVLLimits[] internal deployedStrategyArray;
     // strategies deployed on mainnet
-    StrategyBase[] public deployedForkStrategyArray;
+    StrategyBase[] internal deployedForkStrategyArray;
 
-    EmptyContract public emptyContract;
+    EmptyContract internal emptyContract;
 
     // BeaconChain deposit contract & beacon chain oracle
-    ETHPOSDepositMock public ethPOSDepositMock;
-    address public beaconChainOracle;
+    ETHPOSDepositMock internal ethPOSDepositMock;
+    address internal beaconChainOracle;
 
     // NOTE: this replaces all multisig accounts in the deployment script
     address admin = address(this);
