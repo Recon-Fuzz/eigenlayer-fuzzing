@@ -11,7 +11,6 @@ contract EigenLayerSetupTest is EigenLayerSetup, Test {
 
     address[] public tokenAddressArray = new address[](2);
 
-    // TODO: add tests here to verify deployments
     function test_deployEigenLayer() public {
         stETH = new MockERC20("Staked ETH", "stETH", 18);
         cbETH = new MockERC20("Coinbase ETH", "cbETH", 18);
@@ -19,6 +18,19 @@ contract EigenLayerSetupTest is EigenLayerSetup, Test {
         tokenAddressArray[0] = address(stETH);
         tokenAddressArray[1] = address(cbETH);
 
-        deployEigenLayer(tokenAddressArray);
+        deployEigenLayerLocal(tokenAddressArray);
+    }
+
+    function test_deployEigenLayerFork() public {
+        address[] memory strategyArray = new address[](2);
+        address cbETHStrategyAddress = address(0x54945180dB7943c0ed0FEE7EdaB2Bd24620256bc);
+        address stETHStrategyAddress = address(0x93c4b944D05dfe6df7645A86cd2206016c51564D);
+
+        strategyArray[0] = cbETHStrategyAddress;
+        strategyArray[1] = stETHStrategyAddress;
+
+        // pass in addresses of the strategies used in Renzo here for accurate forking
+        // need to include rpc url and block to fork from
+        deployEigenLayerForked(strategyArray);
     }
 }

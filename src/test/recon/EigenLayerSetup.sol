@@ -55,8 +55,24 @@ contract EigenLayerSetup {
     uint256[] public withdrawalDelayBlocks;
     address[] public tokenAddresses;
 
+    // addresses for fork testing
+    address public eigenLayerPauserRegAddress;
+    address public delegationAddress;
+    address public strategyManagerAddress;
+    address public slasherAddress;
+    address public eigenPodManagerAddress;
+    address public delayedWithdrawalRouterAddress;
+    address public operationsMultisig;
+    address public executorMultisig;
+    address public beaconChainOracleAddress;
+    address public eigenPodBeaconAddress;
+    address public cbETHStrategyAddress;
+    address public stETHStrategyAddress;
+
     // strategies deployed
     StrategyBaseTVLLimits[] public deployedStrategyArray;
+    // strategies deployed on mainnet
+    StrategyBase[] public deployedForkStrategyArray;
 
     EmptyContract public emptyContract;
 
@@ -86,7 +102,7 @@ contract EigenLayerSetup {
         @param _tokenAddresses The LST addresses to deploy strategies for
         NOTE: This copies the logic of the M1_Deploy script to deploy the entire system
     */
-    function deployEigenLayer(address[] memory _tokenAddresses) public {
+    function deployEigenLayerLocal(address[] memory _tokenAddresses) public {
         // save tokenAddresses to state
         tokenAddresses = _tokenAddresses;
 
@@ -156,7 +172,7 @@ contract EigenLayerSetup {
 
         // Third, upgrade the proxy contracts to use the correct implementation contracts and initialize them.
         eigenLayerProxyAdmin.upgradeAndCall(
-            ITransparentUpgradeableProxy(payable(address(delegation))),
+            TransparentUpgradeableProxy(payable(address(delegation))),
             address(delegationImplementation),
             abi.encodeWithSelector(
                 DelegationManager.initialize.selector,
@@ -171,7 +187,7 @@ contract EigenLayerSetup {
             )
         );
         eigenLayerProxyAdmin.upgradeAndCall(
-            ITransparentUpgradeableProxy(payable(address(strategyManager))),
+            TransparentUpgradeableProxy(payable(address(strategyManager))),
             address(strategyManagerImplementation),
             abi.encodeWithSelector(
                 StrategyManager.initialize.selector,
@@ -182,12 +198,12 @@ contract EigenLayerSetup {
             )
         );
         eigenLayerProxyAdmin.upgradeAndCall(
-            ITransparentUpgradeableProxy(payable(address(slasher))),
+            TransparentUpgradeableProxy(payable(address(slasher))),
             address(slasherImplementation),
             abi.encodeWithSelector(Slasher.initialize.selector, admin, eigenLayerPauserReg, SLASHER_INIT_PAUSED_STATUS)
         );
         eigenLayerProxyAdmin.upgradeAndCall(
-            ITransparentUpgradeableProxy(payable(address(eigenPodManager))),
+            TransparentUpgradeableProxy(payable(address(eigenPodManager))),
             address(eigenPodManagerImplementation),
             abi.encodeWithSelector(
                 EigenPodManager.initialize.selector,
@@ -200,7 +216,7 @@ contract EigenLayerSetup {
             )
         );
         eigenLayerProxyAdmin.upgradeAndCall(
-            ITransparentUpgradeableProxy(payable(address(delayedWithdrawalRouter))),
+            TransparentUpgradeableProxy(payable(address(delayedWithdrawalRouter))),
             address(delayedWithdrawalRouterImplementation),
             abi.encodeWithSelector(
                 DelayedWithdrawalRouter.initialize.selector,
@@ -252,6 +268,50 @@ contract EigenLayerSetup {
         _verifyInitialOwners();
         _checkPauserInitializations();
         _verifyInitializationParams();
+    }
+
+    function deployEigenLayerForked(address[] memory _strategies) public {
+        _setAddresses();
+        // what actually needs to be deployed here if EigenLayer is already deployed on mainnet?
+        // TODO: need to use the admin address to grant permissions to admin account here or mock the deployed admin
+
+        // TODO: need to read deployed contract state to figure out what account is proxy admin
+        // eigenLayerProxyAdmin = ProxyAdmin(eigenLayerProxyAdminAddress);
+
+        eigenLayerPauserReg = PauserRegistry(eigenLayerPauserRegAddress);
+
+        delegation = DelegationManager(delegationAddress);
+        strategyManager = StrategyManager(strategyManagerAddress);
+        slasher = Slasher(slasherAddress);
+        eigenPodManager = EigenPodManager(eigenPodManagerAddress);
+        delayedWithdrawalRouter = DelayedWithdrawalRouter(delayedWithdrawalRouterAddress);
+
+        // don't need to mock the ETHPOS deposit contract because deployed EigenPod points to it
+        eigenPodBeacon = UpgradeableBeacon(eigenPodBeaconAddress);
+
+        deployedForkStrategyArray = new StrategyBase[](_strategies.length);
+        // get the deployed strategies used in Renzo to use here
+        deployedForkStrategyArray.push(StrategyBase(_strategies[0]));
+        deployedForkStrategyArray.push(StrategyBase(_strategies[1]));
+    }
+
+    // @audit this function sets contract addresses with those deployed on mainnet
+    function _setAddresses() internal {
+        // eigenLayerProxyAdminAddress = stdJson.readAddress(config, ".addresses.eigenLayerProxyAdmin");
+        eigenLayerPauserRegAddress = address(0x0c431C66F4dE941d089625E5B423D00707977060);
+        // NOTE: the following addresses are the proxies, not implementation
+        delegationAddress = address(0x39053D51B77DC0d36036Fc1fCc8Cb819df8Ef37A);
+        strategyManagerAddress = address(0x858646372CC42E1A627fcE94aa7A7033e7CF075A);
+        slasherAddress = address(0xD92145c07f8Ed1D392c1B88017934E301CC1c3Cd);
+        eigenPodManagerAddress = address(0x91E677b07F7AF907ec9a428aafA9fc14a0d3A338);
+        delayedWithdrawalRouterAddress = address(0x7Fe7E9CC0F274d2435AD5d56D5fa73E47F6A23D8);
+        beaconChainOracleAddress = address(0x343907185b71aDF0eBa9567538314396aa985442);
+        eigenPodBeaconAddress = address(0x5a2a4F2F3C18f09179B6703e63D9eDD165909073);
+        cbETHStrategyAddress = address(0x54945180dB7943c0ed0FEE7EdaB2Bd24620256bc);
+        stETHStrategyAddress = address(0x93c4b944D05dfe6df7645A86cd2206016c51564D);
+
+        operationsMultisig = address(0xBE1685C81aA44FF9FB319dD389addd9374383e90);
+        executorMultisig = address(0x369e6F597e22EaB55fFb173C6d9cD234BD699111);
     }
 
     function _verifyContractsPointAtOneAnother(
@@ -306,30 +366,30 @@ contract EigenLayerSetup {
 
     function _verifyImplementationsSetCorrectly() internal view {
         require(
-            eigenLayerProxyAdmin.getProxyImplementation(ITransparentUpgradeableProxy(payable(address(delegation)))) ==
+            eigenLayerProxyAdmin.getProxyImplementation(TransparentUpgradeableProxy(payable(address(delegation)))) ==
                 address(delegationImplementation),
             "delegation: implementation set incorrectly"
         );
         require(
             eigenLayerProxyAdmin.getProxyImplementation(
-                ITransparentUpgradeableProxy(payable(address(strategyManager)))
+                TransparentUpgradeableProxy(payable(address(strategyManager)))
             ) == address(strategyManagerImplementation),
             "strategyManager: implementation set incorrectly"
         );
         require(
-            eigenLayerProxyAdmin.getProxyImplementation(ITransparentUpgradeableProxy(payable(address(slasher)))) ==
+            eigenLayerProxyAdmin.getProxyImplementation(TransparentUpgradeableProxy(payable(address(slasher)))) ==
                 address(slasherImplementation),
             "slasher: implementation set incorrectly"
         );
         require(
             eigenLayerProxyAdmin.getProxyImplementation(
-                ITransparentUpgradeableProxy(payable(address(eigenPodManager)))
+                TransparentUpgradeableProxy(payable(address(eigenPodManager)))
             ) == address(eigenPodManagerImplementation),
             "eigenPodManager: implementation set incorrectly"
         );
         require(
             eigenLayerProxyAdmin.getProxyImplementation(
-                ITransparentUpgradeableProxy(payable(address(delayedWithdrawalRouter)))
+                TransparentUpgradeableProxy(payable(address(delayedWithdrawalRouter)))
             ) == address(delayedWithdrawalRouterImplementation),
             "delayedWithdrawalRouter: implementation set incorrectly"
         );
@@ -337,7 +397,7 @@ contract EigenLayerSetup {
         for (uint256 i = 0; i < deployedStrategyArray.length; ++i) {
             require(
                 eigenLayerProxyAdmin.getProxyImplementation(
-                    ITransparentUpgradeableProxy(payable(address(deployedStrategyArray[i])))
+                    TransparentUpgradeableProxy(payable(address(deployedStrategyArray[i])))
                 ) == address(baseStrategyImplementation),
                 "strategy: implementation set incorrectly"
             );
