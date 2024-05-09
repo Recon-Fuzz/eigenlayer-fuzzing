@@ -7,7 +7,7 @@ import "../../utils/ExistingDeploymentParser.sol";
  * @notice Script used for the first deployment of EigenLayer core contracts to Holesky
  * forge script script/deploy/holesky/M2_Deploy_From_Scratch.s.sol --rpc-url http://127.0.0.1:8545 --private-key $PRIVATE_KEY --broadcast -vvvv
  * forge script script/deploy/holesky/M2_Deploy_From_Scratch.s.sol --rpc-url $RPC_HOLESKY --private-key $PRIVATE_KEY --broadcast -vvvv
- * 
+ *
  */
 contract M2_Deploy_Holesky_From_Scratch is ExistingDeploymentParser {
     function run() external virtual {
@@ -99,7 +99,7 @@ contract M2_Deploy_Holesky_From_Scratch is ExistingDeploymentParser {
         uint256[] memory initializeWithdrawalDelayBlocks = new uint256[](0);
         // AVSDirectory
         eigenLayerProxyAdmin.upgradeAndCall(
-            TransparentUpgradeableProxy(payable(address(avsDirectory))),
+            ITransparentUpgradeableProxy(payable(address(avsDirectory))),
             address(avsDirectoryImplementation),
             abi.encodeWithSelector(
                 AVSDirectory.initialize.selector,
@@ -110,7 +110,7 @@ contract M2_Deploy_Holesky_From_Scratch is ExistingDeploymentParser {
         );
         // DelegationManager
         eigenLayerProxyAdmin.upgradeAndCall(
-            TransparentUpgradeableProxy(payable(address(delegationManager))),
+            ITransparentUpgradeableProxy(payable(address(delegationManager))),
             address(delegationManagerImplementation),
             abi.encodeWithSelector(
                 DelegationManager.initialize.selector,
@@ -124,7 +124,7 @@ contract M2_Deploy_Holesky_From_Scratch is ExistingDeploymentParser {
         );
         // StrategyManager
         eigenLayerProxyAdmin.upgradeAndCall(
-            TransparentUpgradeableProxy(payable(address(strategyManager))),
+            ITransparentUpgradeableProxy(payable(address(strategyManager))),
             address(strategyManagerImplementation),
             abi.encodeWithSelector(
                 StrategyManager.initialize.selector,
@@ -136,7 +136,7 @@ contract M2_Deploy_Holesky_From_Scratch is ExistingDeploymentParser {
         );
         // Slasher
         eigenLayerProxyAdmin.upgradeAndCall(
-            TransparentUpgradeableProxy(payable(address(slasher))),
+            ITransparentUpgradeableProxy(payable(address(slasher))),
             address(slasherImplementation),
             abi.encodeWithSelector(
                 Slasher.initialize.selector,
@@ -147,7 +147,7 @@ contract M2_Deploy_Holesky_From_Scratch is ExistingDeploymentParser {
         );
         // EigenPodManager
         eigenLayerProxyAdmin.upgradeAndCall(
-            TransparentUpgradeableProxy(payable(address(eigenPodManager))),
+            ITransparentUpgradeableProxy(payable(address(eigenPodManager))),
             address(eigenPodManagerImplementation),
             abi.encodeWithSelector(
                 EigenPodManager.initialize.selector,
@@ -159,7 +159,7 @@ contract M2_Deploy_Holesky_From_Scratch is ExistingDeploymentParser {
         );
         // Delayed Withdrawal Router
         eigenLayerProxyAdmin.upgradeAndCall(
-            TransparentUpgradeableProxy(payable(address(delayedWithdrawalRouter))),
+            ITransparentUpgradeableProxy(payable(address(delayedWithdrawalRouter))),
             address(delayedWithdrawalRouterImplementation),
             abi.encodeWithSelector(
                 DelayedWithdrawalRouter.initialize.selector,
@@ -181,7 +181,7 @@ contract M2_Deploy_Holesky_From_Scratch is ExistingDeploymentParser {
                 address(new TransparentUpgradeableProxy(address(emptyContract), address(eigenLayerProxyAdmin), ""))
             );
             eigenLayerProxyAdmin.upgradeAndCall(
-                TransparentUpgradeableProxy(payable(address(strategy))),
+                ITransparentUpgradeableProxy(payable(address(strategy))),
                 address(baseStrategyImplementation),
                 abi.encodeWithSelector(
                     StrategyBaseTVLLimits.initialize.selector,

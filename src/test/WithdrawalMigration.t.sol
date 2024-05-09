@@ -192,8 +192,8 @@ contract WithdrawalMigrationTests is EigenLayerTestHelper, Utils {
         // Setup payload
         (
             IStrategyManager.DeprecatedStruct_QueuedWithdrawal memory queuedWithdrawal,
-            /*IERC20[] memory tokensArray*/,
-            bytes32 withdrawalRootSM
+            ,
+            /*IERC20[] memory tokensArray*/ bytes32 withdrawalRootSM
         ) = _setUpQueuedWithdrawalStructSingleStrat(
                 /*staker*/ address(this),
                 /*withdrawer*/ address(this),
@@ -343,11 +343,11 @@ contract WithdrawalMigrationTests is EigenLayerTestHelper, Utils {
         // Upgrade
         cheats.startPrank(m1EigenLayerProxyAdmin.owner());
         m1EigenLayerProxyAdmin.upgrade(
-            TransparentUpgradeableProxy(payable(address(m1StrategyManager))),
+            ITransparentUpgradeableProxy(payable(address(m1StrategyManager))),
             address(strategyManagerImplementation)
         );
         m1EigenLayerProxyAdmin.upgrade(
-            TransparentUpgradeableProxy(payable(address(m1DelegationManager))),
+            ITransparentUpgradeableProxy(payable(address(m1DelegationManager))),
             address(delegationManagerImplementation)
         );
         cheats.stopPrank();

@@ -244,15 +244,15 @@ contract M2Deploy is Script, Test {
     function simulatePerformingUpgrade() public {
         cheats.startPrank(eigenLayerProxyAdmin.owner());
         eigenLayerProxyAdmin.upgrade(
-            TransparentUpgradeableProxy(payable(address(delegation))),
+            ITransparentUpgradeableProxy(payable(address(delegation))),
             address(delegationImplementation)
         );
         eigenLayerProxyAdmin.upgrade(
-            TransparentUpgradeableProxy(payable(address(strategyManager))),
+            ITransparentUpgradeableProxy(payable(address(strategyManager))),
             address(strategyManagerImplementation)
         );
         eigenLayerProxyAdmin.upgrade(
-            TransparentUpgradeableProxy(payable(address(eigenPodManager))),
+            ITransparentUpgradeableProxy(payable(address(eigenPodManager))),
             address(eigenPodManagerImplementation)
         );
         cheats.stopPrank();
@@ -292,13 +292,19 @@ contract M2Deploy is Script, Test {
             "strategyManager.withdrawalDelayBlocks incorrect"
         );
         // DelegationManager: Check view functions return pre-upgraded values
-        require(DelegationManagerStorage(address(delegation)).strategyManager() == strategyManager, "delegation.strategyManager incorrect");
+        require(
+            DelegationManagerStorage(address(delegation)).strategyManager() == strategyManager,
+            "delegation.strategyManager incorrect"
+        );
         require(
             delegation.domainSeparator() == delegationManagerDomainSeparator,
             "delegation.domainSeparator incorrect"
         );
         require(DelegationManagerStorage(address(delegation)).slasher() == slasher, "delegation.slasher incorrect");
-        require(DelegationManagerStorage(address(delegation)).eigenPodManager() == eigenPodManager, "delegation.eigenPodManager incorrect");
+        require(
+            DelegationManagerStorage(address(delegation)).eigenPodManager() == eigenPodManager,
+            "delegation.eigenPodManager incorrect"
+        );
         // EigenPodManager: check view functions return pre-upgraded values
         require(eigenPodManager.ethPOS() == ethPOS, "eigenPodManager.ethPOS incorrect");
         require(eigenPodManager.eigenPodBeacon() == eigenPodBeacon, "eigenPodManager.eigenPodBeacon incorrect");
@@ -309,7 +315,10 @@ contract M2Deploy is Script, Test {
             "eigenPodManager.beaconChainOracle incorrect"
         );
         require(eigenPodManager.numPods() == numPods, "eigenPodManager.numPods incorrect");
-        require(EigenPodManagerStorage(address(eigenPodManager)).delegationManager() == delegation, "eigenPodManager.delegationManager incorrect");
+        require(
+            EigenPodManagerStorage(address(eigenPodManager)).delegationManager() == delegation,
+            "eigenPodManager.delegationManager incorrect"
+        );
     }
 
     function _verifyContractsInitialized() internal {

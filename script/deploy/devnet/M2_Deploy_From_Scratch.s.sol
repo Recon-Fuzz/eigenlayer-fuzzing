@@ -212,7 +212,7 @@ contract Deployer_M2 is Script, Test {
             IStrategy[] memory _strategies;
             uint256[] memory _withdrawalDelayBlocks;
             eigenLayerProxyAdmin.upgradeAndCall(
-                TransparentUpgradeableProxy(payable(address(delegation))),
+                ITransparentUpgradeableProxy(payable(address(delegation))),
                 address(delegationImplementation),
                 abi.encodeWithSelector(
                     DelegationManager.initialize.selector,
@@ -226,7 +226,7 @@ contract Deployer_M2 is Script, Test {
             );
         }
         eigenLayerProxyAdmin.upgradeAndCall(
-            TransparentUpgradeableProxy(payable(address(strategyManager))),
+            ITransparentUpgradeableProxy(payable(address(strategyManager))),
             address(strategyManagerImplementation),
             abi.encodeWithSelector(
                 StrategyManager.initialize.selector,
@@ -237,7 +237,7 @@ contract Deployer_M2 is Script, Test {
             )
         );
         eigenLayerProxyAdmin.upgradeAndCall(
-            TransparentUpgradeableProxy(payable(address(slasher))),
+            ITransparentUpgradeableProxy(payable(address(slasher))),
             address(slasherImplementation),
             abi.encodeWithSelector(
                 Slasher.initialize.selector,
@@ -247,12 +247,12 @@ contract Deployer_M2 is Script, Test {
             )
         );
         eigenLayerProxyAdmin.upgradeAndCall(
-            TransparentUpgradeableProxy(payable(address(avsDirectory))),
+            ITransparentUpgradeableProxy(payable(address(avsDirectory))),
             address(avsDirectoryImplementation),
             abi.encodeWithSelector(AVSDirectory.initialize.selector, executorMultisig, eigenLayerPauserReg, 0)
         );
         eigenLayerProxyAdmin.upgradeAndCall(
-            TransparentUpgradeableProxy(payable(address(eigenPodManager))),
+            ITransparentUpgradeableProxy(payable(address(eigenPodManager))),
             address(eigenPodManagerImplementation),
             abi.encodeWithSelector(
                 EigenPodManager.initialize.selector,
@@ -263,7 +263,7 @@ contract Deployer_M2 is Script, Test {
             )
         );
         eigenLayerProxyAdmin.upgradeAndCall(
-            TransparentUpgradeableProxy(payable(address(delayedWithdrawalRouter))),
+            ITransparentUpgradeableProxy(payable(address(delayedWithdrawalRouter))),
             address(delayedWithdrawalRouterImplementation),
             abi.encodeWithSelector(
                 DelayedWithdrawalRouter.initialize.selector,
@@ -444,30 +444,30 @@ contract Deployer_M2 is Script, Test {
 
     function _verifyImplementationsSetCorrectly() internal view {
         require(
-            eigenLayerProxyAdmin.getProxyImplementation(TransparentUpgradeableProxy(payable(address(delegation)))) ==
+            eigenLayerProxyAdmin.getProxyImplementation(ITransparentUpgradeableProxy(payable(address(delegation)))) ==
                 address(delegationImplementation),
             "delegation: implementation set incorrectly"
         );
         require(
             eigenLayerProxyAdmin.getProxyImplementation(
-                TransparentUpgradeableProxy(payable(address(strategyManager)))
+                ITransparentUpgradeableProxy(payable(address(strategyManager)))
             ) == address(strategyManagerImplementation),
             "strategyManager: implementation set incorrectly"
         );
         require(
-            eigenLayerProxyAdmin.getProxyImplementation(TransparentUpgradeableProxy(payable(address(slasher)))) ==
+            eigenLayerProxyAdmin.getProxyImplementation(ITransparentUpgradeableProxy(payable(address(slasher)))) ==
                 address(slasherImplementation),
             "slasher: implementation set incorrectly"
         );
         require(
             eigenLayerProxyAdmin.getProxyImplementation(
-                TransparentUpgradeableProxy(payable(address(eigenPodManager)))
+                ITransparentUpgradeableProxy(payable(address(eigenPodManager)))
             ) == address(eigenPodManagerImplementation),
             "eigenPodManager: implementation set incorrectly"
         );
         require(
             eigenLayerProxyAdmin.getProxyImplementation(
-                TransparentUpgradeableProxy(payable(address(delayedWithdrawalRouter)))
+                ITransparentUpgradeableProxy(payable(address(delayedWithdrawalRouter)))
             ) == address(delayedWithdrawalRouterImplementation),
             "delayedWithdrawalRouter: implementation set incorrectly"
         );
@@ -475,7 +475,7 @@ contract Deployer_M2 is Script, Test {
         for (uint256 i = 0; i < deployedStrategyArray.length; ++i) {
             require(
                 eigenLayerProxyAdmin.getProxyImplementation(
-                    TransparentUpgradeableProxy(payable(address(deployedStrategyArray[i])))
+                    ITransparentUpgradeableProxy(payable(address(deployedStrategyArray[i])))
                 ) == address(baseStrategyImplementation),
                 "strategy: implementation set incorrectly"
             );
