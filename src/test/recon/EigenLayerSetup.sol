@@ -102,7 +102,7 @@ contract EigenLayerSetup {
         @param _tokenAddresses The LST addresses to deploy strategies for
         NOTE: This copies the logic of the M1_Deploy script to deploy the entire system
     */
-    function deployEigenLayerLocal(address[] memory _tokenAddresses) public {
+    function deployEigenLayerLocal(address[] memory _tokenAddresses) internal {
         // save tokenAddresses to state
         tokenAddresses = _tokenAddresses;
 
@@ -270,7 +270,7 @@ contract EigenLayerSetup {
         _verifyInitializationParams();
     }
 
-    function deployEigenLayerForked(address[] memory _strategies) public {
+    function deployEigenLayerForked(address[] memory _strategies) internal {
         _setAddresses();
         // what actually needs to be deployed here if EigenLayer is already deployed on mainnet?
         // TODO: need to use the admin address to grant permissions to admin account here or mock the deployed admin
