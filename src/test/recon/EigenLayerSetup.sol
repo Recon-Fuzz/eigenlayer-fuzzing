@@ -249,6 +249,16 @@ contract EigenLayerSetup {
             );
         }
 
+        // set the strategy whitelist in strategyManager
+        bool[] memory thirdPartyTransfers = new bool[](deployedStrategyArray.length); // default to allowing third party transfers
+        IStrategy[] memory simpleStrategyArray = new IStrategy[](deployedStrategyArray.length);
+
+        // create an array of strategies using their interfaces to be able to pass into strategyManager whitelisting
+        for (uint256 i = 0; i < deployedStrategyArray.length; ++i) {
+            simpleStrategyArray[i] = IStrategy(address(deployedStrategyArray[i]));
+        }
+        strategyManager.addStrategiesToDepositWhitelist(simpleStrategyArray, thirdPartyTransfers);
+
         // CHECK CORRECTNESS OF DEPLOYMENT
         _verifyContractsPointAtOneAnother(
             delegationImplementation,
@@ -290,9 +300,21 @@ contract EigenLayerSetup {
         eigenPodBeacon = UpgradeableBeacon(eigenPodBeaconAddress);
 
         deployedForkStrategyArray = new StrategyBase[](_strategies.length);
+        console2.log("strategies length: ", _strategies.length);
         // get the deployed strategies used in Renzo to use here
         deployedForkStrategyArray.push(StrategyBase(_strategies[0]));
         deployedForkStrategyArray.push(StrategyBase(_strategies[1]));
+
+        // set the strategy whitelist in strategyManager
+        bool[] memory thirdPartyTransfers = new bool[](_strategies.length); // default to allowing third party transfers
+        IStrategy[] memory simpleStrategyArray = new IStrategy[](_strategies.length);
+
+        // create an array of strategies using their interfaces to be able to pass into strategyManager whitelisting
+        // NOTE: may cause issue that leads to revert when testing
+        for (uint256 i = 0; i < _strategies.length; ++i) {
+            simpleStrategyArray[i] = IStrategy(address(deployedForkStrategyArray[i]));
+        }
+        strategyManager.addStrategiesToDepositWhitelist(simpleStrategyArray, thirdPartyTransfers);
     }
 
     // @audit this function sets contract addresses with those deployed on mainnet

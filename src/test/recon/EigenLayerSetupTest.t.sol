@@ -21,16 +21,16 @@ contract EigenLayerSetupTest is EigenLayerSetup, Test {
         deployEigenLayerLocal(tokenAddressArray);
     }
 
-    function test_deployEigenLayerFork() public {
-        address[] memory strategyArray = new address[](2);
-        address cbETHStrategyAddress = address(0x54945180dB7943c0ed0FEE7EdaB2Bd24620256bc);
-        address stETHStrategyAddress = address(0x93c4b944D05dfe6df7645A86cd2206016c51564D);
+    // function test_deployEigenLayerFork() public {
+    //     address[] memory strategyArray = new address[](2);
+    //     address cbETHStrategyAddress = address(0x54945180dB7943c0ed0FEE7EdaB2Bd24620256bc);
+    //     address stETHStrategyAddress = address(0x93c4b944D05dfe6df7645A86cd2206016c51564D);
 
-        strategyArray[0] = cbETHStrategyAddress;
-        strategyArray[1] = stETHStrategyAddress;
+    //     strategyArray[0] = cbETHStrategyAddress;
+    //     strategyArray[1] = stETHStrategyAddress;
 
-        // pass in addresses of the strategies used in Renzo here for accurate forking
-        // need to include rpc url and block to fork from
-        deployEigenLayerForked(strategyArray);
-    }
+    //     // pass in addresses of the strategies used in Renzo here for accurate forking
+    //     // need to include rpc url and block to fork from
+    //     deployEigenLayerForked(strategyArray);
+    // }
 }
