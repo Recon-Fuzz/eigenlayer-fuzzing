@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/proxy/beacon/UpgradeableBeacon.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {vm} from "@chimera/Hevm.sol";
 
-import {ETHPOSDepositMock} from "../mocks/ETHDepositMock.sol";
+import {ETHPOSDepositMock} from "./FuzzingETHDepositMock.sol";
 import {Slasher} from "../../../src/contracts/core/Slasher.sol";
 import {DelegationManager} from "../../../src/contracts/core/DelegationManager.sol";
 import {StrategyManager} from "../../../src/contracts/core/StrategyManager.sol";
