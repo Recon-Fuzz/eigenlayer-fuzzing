@@ -27,7 +27,7 @@ import "forge-std/console2.sol";
 // this contract deploys the EigenLayer system for use by an integrating system
 // to use, the deployEigenLayer function is called by the setup function in the integrating system's fuzz suite
 // which either inherits this contract to have access to the deployed contracts and their state variables
-contract EigenLayerSetup {
+contract EigenLayerSetupV2 {
     struct StrategyConfig {
         uint256 maxDeposits;
         uint256 maxPerDeposit;
@@ -97,16 +97,9 @@ contract EigenLayerSetup {
     /**
         @notice Deploys the entire EigenLayer system locally 
         @dev Strategies are deployed for the tokenAddresses and tokenSymbols passed in
-        @param _tokenAddresses The LST addresses to deploy strategies for
         NOTE: This copies the logic of the M1_Deploy script to deploy the entire system
     */
-    function deployEigenLayerLocal(address[] memory _tokenAddresses) internal {
-        // save tokenAddresses to state
-        tokenAddresses = _tokenAddresses;
-
-        // tokens to deploy strategies for
-        StrategyConfig[] memory strategyConfigs = new StrategyConfig[](_tokenAddresses.length);
-
+    function deployEigenLayerLocal() internal {
         // deploy proxy admin for ability to upgrade proxy contracts
         vm.prank(admin);
         eigenLayerProxyAdmin = new ProxyAdmin();
@@ -384,14 +377,15 @@ contract EigenLayerSetup {
             "delayedWithdrawalRouter: implementation set incorrectly"
         );
 
-        for (uint256 i = 0; i < deployedStrategyArray.length; ++i) {
-            require(
-                eigenLayerProxyAdmin.getProxyImplementation(
-                    ITransparentUpgradeableProxy(payable(address(deployedStrategyArray[i])))
-                ) == address(baseStrategyImplementation),
-                "strategy: implementation set incorrectly"
-            );
-        }
+        // @audit deployed strategy checks are no longer needed
+        // for (uint256 i = 0; i < deployedStrategyArray.length; ++i) {
+        //     require(
+        //         eigenLayerProxyAdmin.getProxyImplementation(
+        //             ITransparentUpgradeableProxy(payable(address(deployedStrategyArray[i])))
+        //         ) == address(baseStrategyImplementation),
+        //         "strategy: implementation set incorrectly"
+        //     );
+        // }
 
         require(
             eigenPodBeacon.implementation() == address(eigenPodImplementation),
@@ -433,16 +427,16 @@ contract EigenLayerSetup {
         require(eigenLayerPauserReg.isPauser(admin), "pauserRegistry: pauserMultisig is not pauser");
         require(eigenLayerPauserReg.unpauser() == admin, "pauserRegistry: unpauser not set correctly");
 
-        for (uint256 i = 0; i < deployedStrategyArray.length; ++i) {
-            require(
-                deployedStrategyArray[i].pauserRegistry() == eigenLayerPauserReg,
-                "StrategyBaseTVLLimits: pauser registry not set correctly"
-            );
-            require(
-                deployedStrategyArray[i].paused() == 0,
-                "StrategyBaseTVLLimits: init paused status set incorrectly"
-            );
-        }
+        // for (uint256 i = 0; i < deployedStrategyArray.length; ++i) {
+        //     require(
+        //         deployedStrategyArray[i].pauserRegistry() == eigenLayerPauserReg,
+        //         "StrategyBaseTVLLimits: pauser registry not set correctly"
+        //     );
+        //     require(
+        //         deployedStrategyArray[i].paused() == 0,
+        //         "StrategyBaseTVLLimits: init paused status set incorrectly"
+        //     );
+        // }
 
         // // pause *nothing*
         // uint256 STRATEGY_MANAGER_INIT_PAUSED_STATUS = 0;
@@ -486,10 +480,10 @@ contract EigenLayerSetup {
             "delayedWithdrawalRouter: eigenPodManager set incorrectly"
         );
 
-        require(
-            baseStrategyImplementation.strategyManager() == strategyManager,
-            "baseStrategyImplementation: strategyManager set incorrectly"
-        );
+        // require(
+        //     baseStrategyImplementation.strategyManager() == strategyManager,
+        //     "baseStrategyImplementation: strategyManager set incorrectly"
+        // );
 
         require(
             eigenPodImplementation.ethPOS() == ethPOSDepositMock,

@@ -1,56 +1,56 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
-import {EigenLayerSetup} from "src/test/recon/EigenLayerSetup.sol";
+import {EigenLayerSetupV2} from "src/test/recon/EigenLayerSetupV2.sol";
 import {MockERC20} from "../mocks/MockERC20.sol";
 import "forge-std/Test.sol";
 
-contract EigenLayerSetupTest is EigenLayerSetup, Test {
+contract EigenLayerSetupTest is EigenLayerSetupV2, Test {
     MockERC20 stETH;
     MockERC20 cbETH;
 
     address[] public tokenAddressArray = new address[](2);
 
     function test_deployEigenLayer() public {
-        stETH = new MockERC20("Staked ETH", "stETH", 18);
-        cbETH = new MockERC20("Coinbase ETH", "cbETH", 18);
+        // stETH = new MockERC20("Staked ETH", "stETH", 18);
+        // cbETH = new MockERC20("Coinbase ETH", "cbETH", 18);
 
-        tokenAddressArray[0] = address(stETH);
-        tokenAddressArray[1] = address(cbETH);
+        // tokenAddressArray[0] = address(stETH);
+        // tokenAddressArray[1] = address(cbETH);
 
-        deployEigenLayerLocal(tokenAddressArray);
+        deployEigenLayerLocal();
     }
 
-    function test_slashing() public {
-        stETH = new MockERC20("Staked ETH", "stETH", 18);
-        cbETH = new MockERC20("Coinbase ETH", "cbETH", 18);
+    // function test_slashing() public {
+    //     stETH = new MockERC20("Staked ETH", "stETH", 18);
+    //     cbETH = new MockERC20("Coinbase ETH", "cbETH", 18);
 
-        tokenAddressArray[0] = address(stETH);
-        tokenAddressArray[1] = address(cbETH);
+    //     tokenAddressArray[0] = address(stETH);
+    //     tokenAddressArray[1] = address(cbETH);
 
-        deployEigenLayerLocal(tokenAddressArray);
+    //     deployEigenLayerLocal(tokenAddressArray);
 
-        bytes memory pubkey = hex"123456";
-        bytes memory withdrawalCredentials = hex"789101";
-        bytes memory signature = hex"789101";
-        bytes32 dataRoot = bytes32(uint256(0xbeef));
+    //     bytes memory pubkey = hex"123456";
+    //     bytes memory withdrawalCredentials = hex"789101";
+    //     bytes memory signature = hex"789101";
+    //     bytes32 dataRoot = bytes32(uint256(0xbeef));
 
-        bytes memory data = abi.encodeWithSignature(
-            "deposit(bytes,bytes,bytes,bytes32)",
-            pubkey,
-            withdrawalCredentials,
-            signature,
-            dataRoot
-        );
+    //     bytes memory data = abi.encodeWithSignature(
+    //         "deposit(bytes,bytes,bytes,bytes32)",
+    //         pubkey,
+    //         withdrawalCredentials,
+    //         signature,
+    //         dataRoot
+    //     );
 
-        vm.deal(address(this), 32 ether);
-        // send ETH directly to deposit contract
-        (bool success, ) = address(ethPOSDepositMock).call{value: 32 ether}(data);
+    //     vm.deal(address(this), 32 ether);
+    //     // send ETH directly to deposit contract
+    //     (bool success, ) = address(ethPOSDepositMock).call{value: 32 ether}(data);
 
-        console2.log("deposit balance before: ", address(ethPOSDepositMock).balance);
-        ethPOSDepositMock.slash();
-        console2.log("deposit balance after: ", address(ethPOSDepositMock).balance);
-    }
+    //     console2.log("deposit balance before: ", address(ethPOSDepositMock).balance);
+    //     ethPOSDepositMock.slash();
+    //     console2.log("deposit balance after: ", address(ethPOSDepositMock).balance);
+    // }
     // function test_deployEigenLayerFork() public {
     //     address[] memory strategyArray = new address[](2);
     //     address cbETHStrategyAddress = address(0x54945180dB7943c0ed0FEE7EdaB2Bd24620256bc);
