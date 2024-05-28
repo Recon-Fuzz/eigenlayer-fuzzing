@@ -21,6 +21,14 @@ contract EigenLayerSetupTest is EigenLayerSetupV2, Test {
         deployEigenLayerLocal();
     }
 
+    function test_addStrategiesToDepositWhitelist() public {
+        deployEigenLayerLocal();
+
+        address[] memory deployedStrategies = new address[](1);
+        bool[] memory thirdPartyTransfers = new bool[](1);
+        _addStrategiesToDepositWhitelist(deployedStrategies, thirdPartyTransfers);
+    }
+
     // function test_slashing() public {
     //     stETH = new MockERC20("Staked ETH", "stETH", 18);
     //     cbETH = new MockERC20("Coinbase ETH", "cbETH", 18);

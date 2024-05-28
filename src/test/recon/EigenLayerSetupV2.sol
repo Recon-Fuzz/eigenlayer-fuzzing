@@ -278,6 +278,17 @@ contract EigenLayerSetupV2 {
         strategyManager.addStrategiesToDepositWhitelist(simpleStrategyArray, thirdPartyTransfers);
     }
 
+    function _addStrategiesToDepositWhitelist(
+        address[] memory deployedStrategies,
+        bool[] memory thirdPartyTransfers
+    ) internal {
+        // take in address array of deployedStrategies which use the interface from Renzo and convert them to use the interface from EigenLayer
+        IStrategy[] memory deployedStrategiestemp = new IStrategy[](1);
+        deployedStrategiestemp[0] = IStrategy(deployedStrategies[0]);
+
+        strategyManager.addStrategiesToDepositWhitelist(deployedStrategiestemp, thirdPartyTransfers);
+    }
+
     // @audit this function sets contract addresses with those deployed on mainnet
     function _setAddresses() internal {
         // eigenLayerProxyAdminAddress = stdJson.readAddress(config, ".addresses.eigenLayerProxyAdmin");
