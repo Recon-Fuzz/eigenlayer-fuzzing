@@ -289,6 +289,12 @@ contract EigenLayerSetupV2 {
         strategyManager.addStrategiesToDepositWhitelist(deployedStrategiestemp, thirdPartyTransfers);
     }
 
+    // @notice utility for removing shares from a strategy because IStrategy interface used on Renzo causes conflicts when trying to call removeShares directly
+    function _removeSharesFromStrategyManager(address staker, address strategy, uint256 sharesToRemove) internal {
+        IStrategy strategyToRemoveFrom = IStrategy(strategy);
+        strategyManager.removeShares(staker, strategyToRemoveFrom, sharesToRemove);
+    }
+
     // @audit this function sets contract addresses with those deployed on mainnet
     function _setAddresses() internal {
         // eigenLayerProxyAdminAddress = stdJson.readAddress(config, ".addresses.eigenLayerProxyAdmin");
