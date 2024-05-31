@@ -24,9 +24,9 @@ contract ETHPOSDepositMock is IETHPOSDeposit {
     }
 
     // @notice replicates behavior of a slashing event on the deposit contract
-    // @dev uses the maximum slashing penalty of 1 ETH for simplicity, burns the ETH to 0 address
-    function slash() external {
-        (bool success, ) = payable(address(0)).call{value: 1 ether}("");
+    // @dev takes in an arbitrary slashing amount to be compatible with AVS slashing and native ETH slashing
+    function slash(uint256 amount) external {
+        (bool success, ) = payable(address(0)).call{value: amount}("");
         require(success, "ETHPOSDepositMock: call to slash() failed");
     }
 }
