@@ -105,32 +105,18 @@ contract EigenLayerSetupV2 {
         eigenLayerProxyAdmin = new ProxyAdmin();
 
         //deploy pauser registry
-        {
-            address[] memory pausers = new address[](1);
-            pausers[0] = admin;
-            eigenLayerPauserReg = new PauserRegistry(pausers, admin);
-        }
+        // {
+        //     address[] memory pausers = new address[](1);
+        //     pausers[0] = admin;
+        //     eigenLayerPauserReg = new PauserRegistry(pausers, admin);
+        // }
+        _deployPauserRegistry();
 
         /** 
             First the upgradeable proxy contracts that will point to implementation contracts get deployed.
             Since implementation contracts aren't yet deployed, they pass in an empty contract as a placeholder
         */
-        emptyContract = new EmptyContract();
-        delegation = DelegationManager(
-            address(new TransparentUpgradeableProxy(address(emptyContract), address(eigenLayerProxyAdmin), ""))
-        );
-        strategyManager = StrategyManager(
-            address(new TransparentUpgradeableProxy(address(emptyContract), address(eigenLayerProxyAdmin), ""))
-        );
-        slasher = Slasher(
-            address(new TransparentUpgradeableProxy(address(emptyContract), address(eigenLayerProxyAdmin), ""))
-        );
-        eigenPodManager = EigenPodManager(
-            address(new TransparentUpgradeableProxy(address(emptyContract), address(eigenLayerProxyAdmin), ""))
-        );
-        delayedWithdrawalRouter = DelayedWithdrawalRouter(
-            address(new TransparentUpgradeableProxy(address(emptyContract), address(eigenLayerProxyAdmin), ""))
-        );
+        _deployUpgradeableContracts();
 
         // deploy the ethPOS
         ethPOSDepositMock = new ETHPOSDepositMock();
@@ -148,75 +134,10 @@ contract EigenLayerSetupV2 {
         eigenPodBeacon = new UpgradeableBeacon(address(eigenPodImplementation));
 
         // Second, deploy the *implementation* contracts, using the *proxy contracts* as inputs
-        delegationImplementation = new DelegationManager(strategyManager, slasher, eigenPodManager);
-        strategyManagerImplementation = new StrategyManager(delegation, eigenPodManager, slasher);
-        slasherImplementation = new Slasher(strategyManager, delegation);
-        eigenPodManagerImplementation = new EigenPodManager(
-            ethPOSDepositMock,
-            eigenPodBeacon,
-            strategyManager,
-            slasher,
-            delegation
-        );
-
-        delayedWithdrawalRouterImplementation = new DelayedWithdrawalRouter(eigenPodManager);
+        _deployImplementationContracts();
 
         // Third, upgrade the proxy contracts to use the correct implementation contracts and initialize them.
-        eigenLayerProxyAdmin.upgradeAndCall(
-            ITransparentUpgradeableProxy(payable(address(delegation))),
-            address(delegationImplementation),
-            abi.encodeWithSelector(
-                DelegationManager.initialize.selector,
-                admin,
-                eigenLayerPauserReg,
-                DELEGATION_INIT_PAUSED_STATUS,
-                DELEGATION_INIT_WITHDRAWAL_DELAY_BLOCKS,
-                // NOTE: passing in empty arrays for these two for now while figuring out how to deploy strategies
-                // TODO: change these once strategy deployments are handled
-                strategies,
-                withdrawalDelayBlocks
-            )
-        );
-        eigenLayerProxyAdmin.upgradeAndCall(
-            ITransparentUpgradeableProxy(payable(address(strategyManager))),
-            address(strategyManagerImplementation),
-            abi.encodeWithSelector(
-                StrategyManager.initialize.selector,
-                admin,
-                admin,
-                eigenLayerPauserReg,
-                STRATEGY_MANAGER_INIT_PAUSED_STATUS
-            )
-        );
-        eigenLayerProxyAdmin.upgradeAndCall(
-            ITransparentUpgradeableProxy(payable(address(slasher))),
-            address(slasherImplementation),
-            abi.encodeWithSelector(Slasher.initialize.selector, admin, eigenLayerPauserReg, SLASHER_INIT_PAUSED_STATUS)
-        );
-        eigenLayerProxyAdmin.upgradeAndCall(
-            ITransparentUpgradeableProxy(payable(address(eigenPodManager))),
-            address(eigenPodManagerImplementation),
-            abi.encodeWithSelector(
-                EigenPodManager.initialize.selector,
-                // EIGENPOD_MANAGER_MAX_PODS, //this was deprecated to not be included in latest version of EigenPodManager
-                // @audit this is setting the oracle address to 0 initially
-                IBeaconChainOracle(address(0)),
-                admin,
-                eigenLayerPauserReg,
-                EIGENPOD_MANAGER_INIT_PAUSED_STATUS
-            )
-        );
-        eigenLayerProxyAdmin.upgradeAndCall(
-            ITransparentUpgradeableProxy(payable(address(delayedWithdrawalRouter))),
-            address(delayedWithdrawalRouterImplementation),
-            abi.encodeWithSelector(
-                DelayedWithdrawalRouter.initialize.selector,
-                admin,
-                eigenLayerPauserReg,
-                DELAYED_WITHDRAWAL_ROUTER_INIT_PAUSED_STATUS,
-                DELAYED_WITHDRAWAL_ROUTER_INIT_WITHDRAWAL_DELAY_BLOCKS
-            )
-        );
+        _upgradeProxies();
 
         // NOTE: what was previously implemented below here to deploy strategies has been moved to Renzo
 
@@ -278,6 +199,109 @@ contract EigenLayerSetupV2 {
         strategyManager.addStrategiesToDepositWhitelist(simpleStrategyArray, thirdPartyTransfers);
     }
 
+    /**
+        System Deployments
+    */
+    function _deployPauserRegistry() internal {
+        address[] memory pausers = new address[](1);
+        pausers[0] = admin;
+        eigenLayerPauserReg = new PauserRegistry(pausers, admin);
+    }
+
+    function _deployUpgradeableContracts() internal {
+        emptyContract = new EmptyContract();
+        delegation = DelegationManager(
+            address(new TransparentUpgradeableProxy(address(emptyContract), address(eigenLayerProxyAdmin), ""))
+        );
+        strategyManager = StrategyManager(
+            address(new TransparentUpgradeableProxy(address(emptyContract), address(eigenLayerProxyAdmin), ""))
+        );
+        slasher = Slasher(
+            address(new TransparentUpgradeableProxy(address(emptyContract), address(eigenLayerProxyAdmin), ""))
+        );
+        eigenPodManager = EigenPodManager(
+            address(new TransparentUpgradeableProxy(address(emptyContract), address(eigenLayerProxyAdmin), ""))
+        );
+        delayedWithdrawalRouter = DelayedWithdrawalRouter(
+            address(new TransparentUpgradeableProxy(address(emptyContract), address(eigenLayerProxyAdmin), ""))
+        );
+    }
+
+    function _deployImplementationContracts() internal {
+        delegationImplementation = new DelegationManager(strategyManager, slasher, eigenPodManager);
+        strategyManagerImplementation = new StrategyManager(delegation, eigenPodManager, slasher);
+        slasherImplementation = new Slasher(strategyManager, delegation);
+        eigenPodManagerImplementation = new EigenPodManager(
+            ethPOSDepositMock,
+            eigenPodBeacon,
+            strategyManager,
+            slasher,
+            delegation
+        );
+        delayedWithdrawalRouterImplementation = new DelayedWithdrawalRouter(eigenPodManager);
+    }
+
+    function _upgradeProxies() internal {
+        eigenLayerProxyAdmin.upgradeAndCall(
+            ITransparentUpgradeableProxy(payable(address(delegation))),
+            address(delegationImplementation),
+            abi.encodeWithSelector(
+                DelegationManager.initialize.selector,
+                admin,
+                eigenLayerPauserReg,
+                DELEGATION_INIT_PAUSED_STATUS,
+                DELEGATION_INIT_WITHDRAWAL_DELAY_BLOCKS,
+                // NOTE: passing in empty arrays for these two for now while figuring out how to deploy strategies
+                // TODO: change these once strategy deployments are handled
+                strategies,
+                withdrawalDelayBlocks
+            )
+        );
+        eigenLayerProxyAdmin.upgradeAndCall(
+            ITransparentUpgradeableProxy(payable(address(strategyManager))),
+            address(strategyManagerImplementation),
+            abi.encodeWithSelector(
+                StrategyManager.initialize.selector,
+                admin,
+                admin,
+                eigenLayerPauserReg,
+                STRATEGY_MANAGER_INIT_PAUSED_STATUS
+            )
+        );
+        eigenLayerProxyAdmin.upgradeAndCall(
+            ITransparentUpgradeableProxy(payable(address(slasher))),
+            address(slasherImplementation),
+            abi.encodeWithSelector(Slasher.initialize.selector, admin, eigenLayerPauserReg, SLASHER_INIT_PAUSED_STATUS)
+        );
+        eigenLayerProxyAdmin.upgradeAndCall(
+            ITransparentUpgradeableProxy(payable(address(eigenPodManager))),
+            address(eigenPodManagerImplementation),
+            abi.encodeWithSelector(
+                EigenPodManager.initialize.selector,
+                // EIGENPOD_MANAGER_MAX_PODS, //this was deprecated to not be included in latest version of EigenPodManager
+                // @audit this is setting the oracle address to 0 initially
+                IBeaconChainOracle(address(0)),
+                admin,
+                eigenLayerPauserReg,
+                EIGENPOD_MANAGER_INIT_PAUSED_STATUS
+            )
+        );
+        eigenLayerProxyAdmin.upgradeAndCall(
+            ITransparentUpgradeableProxy(payable(address(delayedWithdrawalRouter))),
+            address(delayedWithdrawalRouterImplementation),
+            abi.encodeWithSelector(
+                DelayedWithdrawalRouter.initialize.selector,
+                admin,
+                eigenLayerPauserReg,
+                DELAYED_WITHDRAWAL_ROUTER_INIT_PAUSED_STATUS,
+                DELAYED_WITHDRAWAL_ROUTER_INIT_WITHDRAWAL_DELAY_BLOCKS
+            )
+        );
+    }
+
+    /** 
+        Integration Utilities
+    */
     function _addStrategiesToDepositWhitelist(
         address[] memory deployedStrategies,
         bool[] memory thirdPartyTransfers
@@ -295,6 +319,9 @@ contract EigenLayerSetupV2 {
         strategyManager.removeShares(staker, strategyToRemoveFrom, sharesToRemove);
     }
 
+    /** 
+        Fork Testing Utilities
+    */
     // @audit this function sets contract addresses with those deployed on mainnet
     function _setAddresses() internal {
         // eigenLayerProxyAdminAddress = stdJson.readAddress(config, ".addresses.eigenLayerProxyAdmin");
@@ -314,6 +341,9 @@ contract EigenLayerSetupV2 {
         executorMultisig = address(0x369e6F597e22EaB55fFb173C6d9cD234BD699111);
     }
 
+    /**
+        Deployment Verifications
+    */
     function _verifyContractsPointAtOneAnother(
         DelegationManager delegationContract,
         StrategyManager strategyManagerContract,

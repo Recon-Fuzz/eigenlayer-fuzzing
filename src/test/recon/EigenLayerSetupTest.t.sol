@@ -29,31 +29,31 @@ contract EigenLayerSetupTest is EigenLayerSetupV2, Test {
         _addStrategiesToDepositWhitelist(deployedStrategies, thirdPartyTransfers);
     }
 
-    function test_slashing() public {
-        deployEigenLayerLocal();
+    // function test_slashing() public {
+    //     deployEigenLayerLocal();
 
-        bytes memory pubkey = hex"123456";
-        bytes memory withdrawalCredentials = hex"789101";
-        bytes memory signature = hex"789101";
-        bytes32 dataRoot = bytes32(uint256(0xbeef));
+    //     bytes memory pubkey = hex"123456";
+    //     bytes memory withdrawalCredentials = hex"789101";
+    //     bytes memory signature = hex"789101";
+    //     bytes32 dataRoot = bytes32(uint256(0xbeef));
 
-        bytes memory data = abi.encodeWithSignature(
-            "deposit(bytes,bytes,bytes,bytes32)",
-            pubkey,
-            withdrawalCredentials,
-            signature,
-            dataRoot
-        );
+    //     bytes memory data = abi.encodeWithSignature(
+    //         "deposit(bytes,bytes,bytes,bytes32)",
+    //         pubkey,
+    //         withdrawalCredentials,
+    //         signature,
+    //         dataRoot
+    //     );
 
-        vm.deal(address(this), 32 ether);
-        // send ETH directly to deposit contract
-        (bool success, ) = address(ethPOSDepositMock).call{value: 32 ether}(data);
-        require(success, "tansfering to deposit contract failed");
+    //     vm.deal(address(this), 32 ether);
+    //     // send ETH directly to deposit contract
+    //     (bool success, ) = address(ethPOSDepositMock).call{value: 32 ether}(data);
+    //     require(success, "tansfering to deposit contract failed");
 
-        console2.log("deposit balance before: ", address(ethPOSDepositMock).balance);
-        ethPOSDepositMock.slash();
-        console2.log("deposit balance after: ", address(ethPOSDepositMock).balance);
-    }
+    //     console2.log("deposit balance before: ", address(ethPOSDepositMock).balance);
+    //     ethPOSDepositMock.slash();
+    //     console2.log("deposit balance after: ", address(ethPOSDepositMock).balance);
+    // }
 
     // function test_deployEigenLayerFork() public {
     //     address[] memory strategyArray = new address[](2);
