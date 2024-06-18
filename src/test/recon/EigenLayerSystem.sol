@@ -6,6 +6,7 @@ import {EigenLayerSetupV2} from "./EigenLayerSetupV2.sol";
 contract EigenLayerSystem is EigenLayerSetupV2 {
     /// @notice simulates a native slashing event on a validator
     /// @dev when calling this through a target function, need to prank as the pod's address to allow modifying balances in EigenPodManager
+    /// @param podOwner the owner of the pod being slashed
     function slashNative(address podOwner) public {
         // reduces the balance of the deposit contract by the max slashing penalty (1 ETH)
         ethPOSDepositMock.slash(1 ether);
