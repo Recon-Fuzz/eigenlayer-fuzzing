@@ -322,7 +322,7 @@ contract EigenLayerSetupV2 {
     /** 
         Fork Testing Utilities
     */
-    // @audit this function sets contract addresses with those deployed on mainnet
+    /// @notice sets contract addresses with those deployed on mainnet
     function _setAddresses() internal {
         // eigenLayerProxyAdminAddress = stdJson.readAddress(config, ".addresses.eigenLayerProxyAdmin");
         eigenLayerPauserRegAddress = address(0x0c431C66F4dE941d089625E5B423D00707977060);
