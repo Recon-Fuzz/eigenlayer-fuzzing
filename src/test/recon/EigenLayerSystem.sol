@@ -13,11 +13,14 @@ contract EigenLayerSystem is EigenLayerSetupV2, Test {
     /// @dev when calling this through a target function, need to prank as the pod's address to allow modifying balances in EigenPodManager
     /// @param podOwner the owner of the pod being slashed
     function slashNative(address podOwner) public {
-        // update the OperatorDelegator's share balance in EL by calling EigenPodManager as the pod
-        eigenPodManager.recordBeaconChainETHBalanceUpdate(podOwner, -1 ether);
+        address pod = getPodForOwner(address(podOwner));
 
         // reduces the balance of the deposit contract by the max slashing penalty (1 ETH)
         ethPOSDepositMock.slash(1 ether);
+
+        // update the OperatorDelegator's share balance in EL by calling EigenPodManager as the pod
+        vm.prank(pod); // need to prank as pod to call functions in EigenPodManager that modify accounting
+        eigenPodManager.recordBeaconChainETHBalanceUpdate(podOwner, -1 ether);
     }
 
     /// @notice simulates an AVS slashing event

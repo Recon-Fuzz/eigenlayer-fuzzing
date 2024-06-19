@@ -42,9 +42,9 @@ contract EigenLayerSystemTest is EigenLayerSystem {
         int256 podOwnerSharesBefore = eigenPodManager.podOwnerShares(address(this));
 
         // slash the created EigenPod
-        vm.startPrank(podAddress);
+        // vm.startPrank(podAddress);
         slashNative(address(this));
-        vm.stopPrank();
+        // vm.stopPrank();
 
         uint256 depositContractBalanceAfter = address(ethPOSDepositMock).balance;
         int256 podOwnerSharesAfter = eigenPodManager.podOwnerShares(address(this));
