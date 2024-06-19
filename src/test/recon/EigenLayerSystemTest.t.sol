@@ -6,7 +6,7 @@ import {EigenLayerSystem} from "./EigenLayerSystem.sol";
 import {MockERC20} from "../mocks/MockERC20.sol";
 import "forge-std/Test.sol";
 
-contract EigenLayerSystemTest is EigenLayerSystem, Test {
+contract EigenLayerSystemTest is EigenLayerSystem {
     MockERC20 stETH;
     MockERC20 cbETH;
 
