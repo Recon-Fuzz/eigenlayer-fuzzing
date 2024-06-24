@@ -69,8 +69,8 @@ contract EigenLayerSetupV2 {
     address internal cbETHStrategyAddress;
     address internal stETHStrategyAddress;
 
-    // strategies deployed on mainnet
-    StrategyBase[] internal deployedForkStrategyArray;
+    StrategyBaseTVLLimits[] internal deployedStrategyArray; // strategies deployed locally
+    StrategyBase[] internal deployedForkStrategyArray; // strategies deployed on mainnet
 
     EmptyContract internal emptyContract;
 
@@ -99,7 +99,7 @@ contract EigenLayerSetupV2 {
         @dev Strategies are deployed for the tokenAddresses and tokenSymbols passed in
         NOTE: This copies the logic of the M1_Deploy script to deploy the entire system
     */
-    function deployEigenLayerLocal() internal {
+    function deployEigenLayerLocal(address[] memory _tokenAddresses) internal {
         // deploy proxy admin for ability to upgrade proxy contracts
         vm.prank(admin);
         eigenLayerProxyAdmin = new ProxyAdmin();
@@ -139,7 +139,7 @@ contract EigenLayerSetupV2 {
         // Third, upgrade the proxy contracts to use the correct implementation contracts and initialize them.
         _upgradeProxies();
 
-        // NOTE: what was previously implemented below here to deploy strategies has been moved to Renzo
+        _deployStrategies(_tokenAddresses);
 
         // CHECK CORRECTNESS OF DEPLOYMENT
         _verifyContractsPointAtOneAnother(
@@ -297,6 +297,40 @@ contract EigenLayerSetupV2 {
                 DELAYED_WITHDRAWAL_ROUTER_INIT_WITHDRAWAL_DELAY_BLOCKS
             )
         );
+    }
+
+    function _deployStrategies(address[] memory _tokenAddresses) internal {
+        baseStrategyImplementation = new StrategyBaseTVLLimits(strategyManager);
+        // creates upgradeable proxies of strategies that each point to the implementation and initialize them
+        for (uint256 i = 0; i < _tokenAddresses.length; ++i) {
+            deployedStrategyArray.push(
+                StrategyBaseTVLLimits(
+                    address(
+                        new TransparentUpgradeableProxy(
+                            address(baseStrategyImplementation),
+                            address(eigenLayerProxyAdmin),
+                            abi.encodeWithSelector(
+                                StrategyBaseTVLLimits.initialize.selector,
+                                type(uint256).max,
+                                type(uint256).max,
+                                IERC20(_tokenAddresses[i]),
+                                eigenLayerPauserReg
+                            )
+                        )
+                    )
+                )
+            );
+        }
+
+        // set the strategy whitelist in strategyManager
+        bool[] memory thirdPartyTransfers = new bool[](deployedStrategyArray.length); // default to allowing third party transfers
+        IStrategy[] memory simpleStrategyArray = new IStrategy[](deployedStrategyArray.length);
+
+        // create an array of strategies using their interfaces to be able to pass into strategyManager whitelisting
+        for (uint256 i = 0; i < deployedStrategyArray.length; ++i) {
+            simpleStrategyArray[i] = IStrategy(address(deployedStrategyArray[i]));
+        }
+        strategyManager.addStrategiesToDepositWhitelist(simpleStrategyArray, thirdPartyTransfers);
     }
 
     /** 
