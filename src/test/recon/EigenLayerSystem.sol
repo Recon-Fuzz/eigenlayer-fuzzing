@@ -1,13 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.12;
 
-import {EigenLayerSetupV2} from "./EigenLayerSetupV2.sol";
-import {IStrategy} from "../../contracts/interfaces/IStrategy.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "forge-std/Test.sol";
 
-contract EigenLayerSystem is EigenLayerSetupV2, Test {
-    address immutable TOKEN_BURN_ADDRESS = address(0xDEADBEEF); // used to simulate token burning for tokens that don't allow transfer to 0 address
+import {EigenLayerSetup} from "./EigenLayerSetup.sol";
+import {IStrategy} from "../../contracts/interfaces/IStrategy.sol";
+
+contract EigenLayerSystem is EigenLayerSetup, Test {
+    address immutable TOKEN_BURN_ADDRESS = address(0xDEADBEEF); // address for simulating token burning for tokens that don't allow transfer to 0 address
 
     /// @notice simulates a native slashing event on a validator
     /// @dev when calling this through a target function, need to prank as the pod's address to allow modifying balances in EigenPodManager
@@ -19,18 +20,13 @@ contract EigenLayerSystem is EigenLayerSetupV2, Test {
         ethPOSDepositMock.slash(1 ether);
 
         // update the OperatorDelegator's share balance in EL by calling EigenPodManager as the pod
-        vm.prank(pod); // need to prank as pod to call functions in EigenPodManager that modify accounting
+        vm.prank(pod);
         eigenPodManager.recordBeaconChainETHBalanceUpdate(podOwner, -1 ether);
     }
 
     /// @notice simulates an AVS slashing event
     /// @dev this assumes slashing amounts for an LST and native ETH can be different
-    function slashAVS(
-        address user,
-        address[] memory activeStrategies,
-        uint256 nativeSlashAmount,
-        uint256 lstSlashAmount
-    ) public {
+    function slashAVS(address user, uint256 nativeSlashAmount, uint256 lstSlashAmount) public {
         // Slash native ETH if user has any staked in an EigenPod
         uint256 nativeEthShares = uint256(eigenPodManager.podOwnerShares(address(user)));
         if (nativeEthShares > 0) {
@@ -47,24 +43,23 @@ contract EigenLayerSystem is EigenLayerSetupV2, Test {
         }
 
         // loop through strategies to slash if a user has any shares in them
-        for (uint256 i; i < activeStrategies.length; i++) {
-            IStrategy strategy = IStrategy(activeStrategies[i]);
+        for (uint256 i; i < deployedStrategyArray.length; i++) {
+            IStrategy strategy = IStrategy(address(deployedStrategyArray[i]));
             uint256 lstShares = strategy.shares(address(user));
 
             // Slash LST if user has any shares of the given LST strategy
             if (lstShares > 0) {
                 uint256 slashingAmountLSTShares = lstSlashAmount % lstShares;
-                // convert share amount to slash to amount of collateral token
                 uint256 amountLSTToken = strategy.sharesToUnderlyingView(slashingAmountLSTShares);
 
                 // "burn" tokens in strategy to ensure they don't effect accounting
-                vm.prank(activeStrategies[i]);
+                vm.prank(address(deployedStrategyArray[i]));
                 IERC20 underlyingToken = strategy.underlyingToken();
                 underlyingToken.transfer(TOKEN_BURN_ADDRESS, amountLSTToken);
 
                 // remove shares to update user's accounting
                 vm.prank(address(delegation));
-                _removeSharesFromStrategyManager(address(user), address(activeStrategies[i]), slashingAmountLSTShares);
+                strategyManager.removeShares(address(user), strategy, slashingAmountLSTShares);
             }
         }
     }
