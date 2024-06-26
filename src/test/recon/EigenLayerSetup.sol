@@ -61,14 +61,13 @@ contract EigenLayerSetup {
     address[] internal tokenAddresses;
     address internal beaconChainOracle; // beacon chain oracle
 
-    // NOTE: this replaces all multisig accounts in the deployment script
     address admin = address(this);
 
     // NOTE: All constant values are taken from mainnet deployments
     uint256 MAX_RESTAKED_BALANCE_GWEI_PER_VALIDATOR = 32 gwei;
     uint64 GENESIS_TIME = 1616508000;
 
-    // NOTE: setting these to false so that contracts can immediately be interacted with
+    // NOTE: 0 = unpaused
     uint256 DELEGATION_INIT_PAUSED_STATUS = 0;
     uint256 DELEGATION_INIT_WITHDRAWAL_DELAY_BLOCKS = 0;
     uint256 STRATEGY_MANAGER_INIT_PAUSED_STATUS = 0;
@@ -83,7 +82,7 @@ contract EigenLayerSetup {
         NOTE: This copies the logic of the M1_Deploy script to deploy the entire system
     */
     function deployEigenLayerLocal() internal {
-        // deploy proxy admin for ability to upgrade proxy contracts
+        // deploy proxy admin that has ability to upgrade proxy contracts
         vm.prank(admin);
         eigenLayerProxyAdmin = new ProxyAdmin();
 
@@ -211,8 +210,6 @@ contract EigenLayerSetup {
             address(eigenPodManagerImplementation),
             abi.encodeWithSelector(
                 EigenPodManager.initialize.selector,
-                // EIGENPOD_MANAGER_MAX_PODS, //this was deprecated to not be included in latest version of EigenPodManager
-                // @audit this is setting the oracle address to 0 initially
                 IBeaconChainOracle(address(0)),
                 admin,
                 eigenLayerPauserReg,
@@ -243,7 +240,7 @@ contract EigenLayerSetup {
 
     function _deployStrategies() internal {
         baseStrategyImplementation = new StrategyBaseTVLLimits(strategyManager);
-        // creates upgradeable proxies of strategies that each point to the implementation and initialize them
+        // create upgradeable proxies of strategies that each point to the implementation and initialize them
         for (uint256 i = 0; i < tokenAddresses.length; ++i) {
             deployedStrategyArray.push(
                 StrategyBaseTVLLimits(
@@ -280,7 +277,6 @@ contract EigenLayerSetup {
     function _verifyContractsPointAtOneAnother(
         DelegationManager delegationContract,
         StrategyManager strategyManagerContract,
-        Slasher slasherContract,
         EigenPodManager eigenPodManagerContract,
         DelayedWithdrawalRouter delayedWithdrawalRouterContract
     ) internal view {
@@ -299,10 +295,6 @@ contract EigenLayerSetup {
             strategyManagerContract.eigenPodManager() == eigenPodManager,
             "strategyManager: eigenPodManager address not set correctly"
         );
-
-        // NOTE: slasher implementation not completed so leaving these out
-        // require(slasherContract.strategyManager() == strategyManager, "slasher: strategyManager not set correctly");
-        // require(slasherContract.delegation() == delegation, "slasher: delegation not set correctly");
 
         require(
             eigenPodManagerContract.ethPOS() == ethPOSDepositMock,
@@ -376,8 +368,6 @@ contract EigenLayerSetup {
     function _verifyInitialOwners() internal view {
         require(strategyManager.owner() == admin, "strategyManager: owner not set correctly");
         require(delegation.owner() == admin, "delegation: owner not set correctly");
-        // NOTE: slasher implementation not complete, leaving out
-        // require(slasher.owner() == admin, "slasher: owner not set correctly");
         require(eigenPodManager.owner() == admin, "delegation: owner not set correctly");
 
         require(eigenLayerProxyAdmin.owner() == admin, "eigenLayerProxyAdmin: owner not set correctly");
@@ -391,8 +381,6 @@ contract EigenLayerSetup {
             strategyManager.pauserRegistry() == eigenLayerPauserReg,
             "strategyManager: pauser registry not set correctly"
         );
-        // NOTE: slasher development not finished
-        // require(slasher.pauserRegistry() == eigenLayerPauserReg, "slasher: pauser registry not set correctly");
         require(
             eigenPodManager.pauserRegistry() == eigenLayerPauserReg,
             "eigenPodManager: pauser registry not set correctly"
@@ -436,15 +424,6 @@ contract EigenLayerSetup {
     }
 
     function _verifyInitializationParams() internal view {
-        // // one week in blocks -- 50400
-        // uint32 STRATEGY_MANAGER_INIT_WITHDRAWAL_DELAY_BLOCKS = 7 days / 12 seconds;
-        // uint32 DELAYED_WITHDRAWAL_ROUTER_INIT_WITHDRAWAL_DELAY_BLOCKS = 7 days / 12 seconds;
-        // require(strategyManager.withdrawalDelayBlocks() == 7 days / 12 seconds,
-        //     "strategyManager: withdrawalDelayBlocks initialized incorrectly");
-        // require(delayedWithdrawalRouter.withdrawalDelayBlocks() == 7 days / 12 seconds,
-        //     "delayedWithdrawalRouter: withdrawalDelayBlocks initialized incorrectly");
-        // uint256 REQUIRED_BALANCE_WEI = 32 ether;
-
         require(
             strategyManager.strategyWhitelister() == admin,
             "strategyManager: strategyWhitelister address not set correctly"
