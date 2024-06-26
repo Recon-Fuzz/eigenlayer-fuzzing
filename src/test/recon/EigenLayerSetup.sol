@@ -116,17 +116,10 @@ contract EigenLayerSetup {
         _verifyContractsPointAtOneAnother(
             delegationImplementation,
             strategyManagerImplementation,
-            slasherImplementation,
             eigenPodManagerImplementation,
             delayedWithdrawalRouterImplementation
         );
-        _verifyContractsPointAtOneAnother(
-            delegation,
-            strategyManager,
-            slasher,
-            eigenPodManager,
-            delayedWithdrawalRouter
-        );
+        _verifyContractsPointAtOneAnother(delegation, strategyManager, eigenPodManager, delayedWithdrawalRouter);
         _verifyImplementationsSetCorrectly();
         _verifyInitialOwners();
         _checkPauserInitializations();
