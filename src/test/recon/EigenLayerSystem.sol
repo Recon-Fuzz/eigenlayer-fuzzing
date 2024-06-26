@@ -16,7 +16,7 @@ contract EigenLayerSystem is EigenLayerSetup, Test {
     function slashNative(address podOwner) public {
         address pod = getPodForOwner(address(podOwner));
 
-        // reduces the balance of the deposit contract by the max slashing penalty (1 ETH)
+        // reduces the balance of the deposit contract by the max native slashing penalty (1 ETH)
         ethPOSDepositMock.slash(1 ether);
 
         // update the OperatorDelegator's share balance in EL by calling EigenPodManager as the pod
@@ -36,13 +36,13 @@ contract EigenLayerSystem is EigenLayerSetup, Test {
             // shares are 1:1 with ETH in EigenPod so can slash the share amount directly
             ethPOSDepositMock.slash(nativeSlashAmount);
 
-            // update the OperatorDelegator's share balance in EL by calling EigenPodManager as the pod
+            // update the OperatorDelegator's share balance in EigenLayer by calling EigenPodManager as the pod
             address podAddress = getPodForOwner(user);
             vm.prank(podAddress);
             eigenPodManager.recordBeaconChainETHBalanceUpdate(address(user), -int256(nativeSlashAmount));
         }
 
-        // loop through strategies to slash if a user has any shares in them
+        // Loop through strategies and slash if a user has any shares in them
         for (uint256 i; i < deployedStrategyArray.length; i++) {
             IStrategy strategy = IStrategy(address(deployedStrategyArray[i]));
             uint256 lstShares = strategy.shares(address(user));

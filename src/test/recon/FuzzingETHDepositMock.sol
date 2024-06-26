@@ -23,8 +23,9 @@ contract ETHPOSDepositMock is IETHPOSDeposit {
         return root;
     }
 
-    // @notice replicates behavior of a slashing event on the deposit contract
-    // @dev takes in an arbitrary slashing amount to be compatible with AVS slashing and native ETH slashing
+    /// @notice replicates behavior of a slashing event on the deposit contract
+    /// @dev takes in an arbitrary slashing amount to be compatible with AVS slashing and native ETH slashing
+    /// @param amount - the amount to slash a validator's stake by
     function slash(uint256 amount) external {
         bool success = payable(address(0)).send(amount);
         require(success, "ETHPOSDepositMock: call to slash() failed");
