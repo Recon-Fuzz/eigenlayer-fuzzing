@@ -26,10 +26,10 @@ Call the `deployEigenLayerLocal` function somewhere in your system setup. You wi
 
 ### Working Example
 
-See [this Renzo-Fuzzing repo](https://github.com/nican0r/renzo-fuzzing) for a working example of how to integrate this repo into a fuzzing suite.
+See [this Renzo-Fuzzing repo](https://github.com/Recon-Fuzz/renzo-fuzzing) for a working example of how to integrate this repo into a fuzzing suite.
 
 ### Externalities
 The following economic externalities have been added to the EigenLayerSystem contract to facilitate testing these sorts of events in integrating protocols. 
 
-- [Native ETH slashing](https://github.com/nican0r/eigenlayer-fuzzing/blob/4416d89454aa1d201a101bca90c24100e9434141/src/test/recon/EigenLayerSystem.sol#L16-L25)
-- [AVS slashing](https://github.com/nican0r/eigenlayer-fuzzing/blob/4416d89454aa1d201a101bca90c24100e9434141/src/test/recon/EigenLayerSystem.sol#L29-L65)
+- [Native ETH slashing](https://github.com/Recon-Fuzz/eigenlayer-fuzzing/blob/4416d89454aa1d201a101bca90c24100e9434141/src/test/recon/EigenLayerSystem.sol#L16-L25)
+- [AVS slashing](https://github.com/Recon-Fuzz/eigenlayer-fuzzing/blob/4416d89454aa1d201a101bca90c24100e9434141/src/test/recon/EigenLayerSystem.sol#L29-L65)
