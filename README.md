@@ -11,7 +11,7 @@ The `deployEigenLayerLocal` function in `EigenLayerSystem` deploys a local versi
 In a Foundry project add this repository as a submodule with: 
 
 ```bash 
-forge install nican0r/eigenlayer-fuzzing
+forge install Recon-Fuzz/eigenlayer-fuzzing
 ```
 
 Inherit the `EigenLayerSystem` contract into the `Setup` or test contract of the fuzzing/testing suite.
