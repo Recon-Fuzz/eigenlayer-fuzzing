@@ -13,7 +13,7 @@ contract EigenLayerSystem is EigenLayerSetup, Test {
     /// @notice simulates a native slashing event on a validator
     /// @dev when calling this through a target function, need to prank as the pod's address to allow modifying balances in EigenPodManager
     /// @param podOwner the owner of the pod being slashed
-    function slashNative(address podOwner) public {
+    function slashNative(address podOwner) internal {
         address pod = getPodForOwner(address(podOwner));
 
         // reduces the balance of the deposit contract by the max native slashing penalty (1 ETH)
@@ -26,7 +26,7 @@ contract EigenLayerSystem is EigenLayerSetup, Test {
 
     /// @notice simulates an AVS slashing event
     /// @dev this assumes slashing amounts for an LST and native ETH can be different
-    function slashAVS(address user, uint256 nativeSlashAmount, uint256 lstSlashAmount) public {
+    function slashAVS(address user, uint256 nativeSlashAmount, uint256 lstSlashAmount) internal {
         // Slash native ETH if user has any staked in an EigenPod
         uint256 nativeEthShares = uint256(eigenPodManager.podOwnerShares(address(user)));
         if (nativeEthShares > 0) {
@@ -65,7 +65,7 @@ contract EigenLayerSystem is EigenLayerSetup, Test {
     }
 
     /// @notice returns the address of an EigenPod for an Owner, if one exists
-    function getPodForOwner(address owner) public view returns (address eigenPod) {
+    function getPodForOwner(address owner) internal view returns (address eigenPod) {
         return address(eigenPodManager.getPod(address(owner)));
     }
 }
