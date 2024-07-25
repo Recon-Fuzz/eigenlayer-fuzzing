@@ -5,6 +5,8 @@ This repository acts as a base entrypoint to the EigenLayer system, allowing ful
 
 By deploying the entire EigenLayer system you can skip the need to create mocks of EigenLayer contracts and directly integrate into a suite using Echidna/Medusa/Foundry for fuzzing/unit testing. 
 
+See the accompanying blog post [here](https://getrecon.substack.com/p/integrating-eigenlayer-into-your) for more information on how to use and design decisions.
+
 ### To use 
 The `deployEigenLayerLocal` function in `EigenLayerSystem` deploys a local version of EigenLayer with two token strategies (stETH and wbETH) and makes it inheritable into your testing suite.
 
