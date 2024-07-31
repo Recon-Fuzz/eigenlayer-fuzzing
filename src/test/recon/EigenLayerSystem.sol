@@ -2,12 +2,12 @@
 pragma solidity ^0.8.12;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "forge-std/Test.sol";
+import {vm} from "@chimera/Hevm.sol";
 
 import {EigenLayerSetup} from "./EigenLayerSetup.sol";
 import {IStrategy} from "../../contracts/interfaces/IStrategy.sol";
 
-contract EigenLayerSystem is EigenLayerSetup, Test {
+contract EigenLayerSystem is EigenLayerSetup {
     address immutable TOKEN_BURN_ADDRESS = address(0xDEADBEEF); // address for simulating token burning for tokens that don't allow transfer to 0 address
 
     /// @notice simulates a native slashing event on a validator
