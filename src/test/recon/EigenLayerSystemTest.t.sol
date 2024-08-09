@@ -6,8 +6,9 @@ import "forge-std/console.sol";
 
 import {EigenLayerSystem} from "./EigenLayerSystem.sol";
 import {IStrategy} from "../../../src/contracts/interfaces/IStrategy.sol";
+import "forge-std/Test.sol";
 
-contract EigenLayerSystemTest is EigenLayerSystem {
+contract EigenLayerSystemTest is EigenLayerSystem, Test {
     using SafeERC20 for IERC20;
 
     function test_deployEigenLayer_local() public {
