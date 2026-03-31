@@ -1,3 +1,5 @@
+[![Audited by Recon](https://getrecon.xyz/api/badge?type=audited)](https://getrecon.xyz)
+
 ## EigenLayer Fuzzing
 
 ### Purpose
